@@ -138,7 +138,7 @@ const Zendel = () => {
       <button onClick={() => handleStart()}>Start</button>
       {start ? (
         <>
-          {size === 3 ? (
+          {/* {size === 3 ? (
             <>
               <div
                 style={{
@@ -181,7 +181,7 @@ const Zendel = () => {
 
               <p>якщо всі &lambda; менше одиниці то метод збіжний</p>
             </>
-          ) : null}
+          ) : null} */}
           {step.map((step, index) => (
             <>
               <div key={index}>
