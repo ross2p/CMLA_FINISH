@@ -158,13 +158,13 @@ function gaussianElimination(matrix) {
 
     // Перевірка на нульовий стовпчик (незв'язна система)
     if (mat[i][i] === 0) {
-      return { solution: null, determinant: 0 }; // Повертаємо нульовий розв'язок і детермінант
+      return { solution: null, determinant: 0, steps: steps }; // Повертаємо нульовий розв'язок і детермінант
     }
 
     // Віднімаємо рядки зі зміненим коефіцієнтом, щоб зробити елементи під діагоналлю нульовими
     for (let j = i + 1; j < mat.length; j++) {
       let factor = mat[j][i] / mat[i][i];
-      for (let k = i; k < mat.length; k++) {
+      for (let k = i; k < mat[i].length; k++) {
         mat[j][k] -= factor * mat[i][k];
       }
       steps.push({
@@ -187,18 +187,21 @@ function gaussianElimination(matrix) {
   steps.push({
     name:
       "Перемноживши діагональ отримаємо детермінант: " +
-      mat.map((row, index) => row[index]).join(" * "),
+      mat.map((row, index) => row[index]).join(" * ") +
+      " = " +
+      det,
     matrix: mat.map((row) => [...row]),
     det: det,
   });
 
   // Обчислення розв'язку
-  let solution = new Array(mat.length);
+  let solution = new Array(mat.length).fill(0);
   for (let i = mat.length - 1; i >= 0; i--) {
-    solution[i] = mat[i][mat.length] / mat[i][i];
-    for (let j = i - 1; j >= 0; j--) {
-      mat[j][mat.length] -= mat[j][i] * solution[i];
+    let sum = 0;
+    for (let j = i + 1; j < mat.length; j++) {
+      sum += mat[i][j] * solution[j];
     }
+    solution[i] = (mat[i][mat.length] - sum) / mat[i][i];
   }
 
   return { solution: solution, determinant: det, steps: steps };

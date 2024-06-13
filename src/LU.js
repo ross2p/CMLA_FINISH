@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./App.css";
 // Функція для знаходження розв'язку системи рівнянь методом LU
 function solveUsingLU(matrix, isLUp) {
+  console.log("isLUp", isLUp);
   let step = [];
   // Перевірка чи розмірність матриці коректна
   const n = matrix.length;
@@ -12,25 +13,61 @@ function solveUsingLU(matrix, isLUp) {
   }
 
   // Розкладання матриці на L та U
-  function luDecomposition(matrix) {
-    const L = [];
-    const U = [];
-    for (let i = 0; i < n; i++) {
-      L[i] = [];
-      U[i] = [];
-      for (let j = 0; j < n; j++) {
-        if (i > j) {
-          L[i][j] = matrix[i][j];
-          U[i][j] = 0;
-        } else if (i === j) {
-          L[i][j] = 1;
-          U[i][j] = matrix[i][j];
-        } else {
-          L[i][j] = 0;
-          U[i][j] = matrix[i][j];
+  function luDecomposition(A, isL_diag_one = true) {
+    let n = A.length;
+    let L = Array.from({ length: n }, () => Array(n).fill(0));
+    let U = Array.from({ length: n }, () => Array(n).fill(0));
+
+    if (isL_diag_one) {
+      for (let i = 0; i < n; i++) {
+        // Заповнення верхньої трикутної матриці U
+        for (let k = i; k < n; k++) {
+          let sum = 0;
+          for (let j = 0; j < i; j++) {
+            sum += L[i][j] * U[j][k];
+          }
+          U[i][k] = A[i][k] - sum;
+        }
+
+        // Заповнення нижньої трикутної матриці L
+        for (let k = i; k < n; k++) {
+          if (i === k) {
+            L[i][i] = 1; // Діагональні елементи L дорівнюють 1
+          } else {
+            let sum = 0;
+            for (let j = 0; j < i; j++) {
+              sum += L[k][j] * U[j][i];
+            }
+            L[k][i] = (A[k][i] - sum) / U[i][i];
+          }
+        }
+      }
+    } else {
+      for (let i = 0; i < n; i++) {
+        // Заповнення нижньої трикутної матриці L
+        for (let k = i; k < n; k++) {
+          let sum = 0;
+          for (let j = 0; j < i; j++) {
+            sum += L[k][j] * U[j][i];
+          }
+          L[k][i] = A[k][i] - sum;
+        }
+
+        // Заповнення верхньої трикутної матриці U
+        for (let k = i; k < n; k++) {
+          if (i === k) {
+            U[i][i] = 1; // Діагональні елементи U дорівнюють 1
+          } else {
+            let sum = 0;
+            for (let j = 0; j < i; j++) {
+              sum += L[i][j] * U[j][k];
+            }
+            U[i][k] = (A[i][k] - sum) / L[i][i];
+          }
         }
       }
     }
+
     return { L, U };
   }
 
@@ -64,34 +101,21 @@ function solveUsingLU(matrix, isLUp) {
   }
 
   // Перевірка чи матриця є верхньою чи нижньою трикутною
-  if (!isLUp) {
-    // Виконати перетворення матриці в верхню трикутну
-    // Це можна зробити, використовуючи метод Гаусса або інші методи
-    // Тут ми просто використовуємо заздалегідь знайдену функцію luDecomposition
-    const { L, U } = luDecomposition(matrix);
-    step.push({
-      name: "Розклали матрички LU",
-      L: L,
-      U: U,
-    });
-    console.log("L", L);
-    console.log("U", U);
+  // Виконати перетворення матриці в верхню трикутну
+  // Це можна зробити, використовуючи метод Гаусса або інші методи
+  // Тут ми просто використовуємо заздалегідь знайдену функцію luDecomposition
+  const { L, U } = luDecomposition(matrix, isLUp);
+  step.push({
+    name: "Розклали матрички LU",
+    L: L,
+    U: U,
+  });
+  console.log("L", L);
+  console.log("U", U);
 
-    const b = matrix.map((row) => row[n]); // Отримання вектора b з останнього стовпця матриці
-    const result = backSubstitution(L, U, b);
-    return { result: result, step: step };
-  } else {
-    // Виконати розв'язок без будь-яких перетворень, оскільки матриця вже є L або U
-    const { U, L } = luDecomposition(matrix);
-    step.push({
-      name: "Розклали матрички LU",
-      L: L,
-      U: U,
-    });
-    const b = matrix.map((row) => row[n]); // Отримання вектора b з останнього стовпця матриці
-    const result = backSubstitution(L, U, b);
-    return { result: result, step: step };
-  }
+  const b = matrix.map((row) => row[n]); // Отримання вектора b з останнього стовпця матриці
+  const result = backSubstitution(L, U, b);
+  return { result: result, step: step };
 }
 
 function LU() {
@@ -205,11 +229,14 @@ function LU() {
           </div>
         ))}
       </div>
-      <p>U верхня</p>
+      <p>L Одинична</p>
       <input
         type="checkbox"
         value={isL}
-        onChange={(e) => setIsL(e.target.value)}
+        onChange={(e) => {
+          setIsL(e.target.checked);
+          console.log("e.target.checked", e.target.checked);
+        }}
       />
 
       <button onClick={() => handleStart(matrix)}>Запустити обчислення</button>

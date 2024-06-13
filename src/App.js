@@ -37,7 +37,7 @@ function App() {
         checked={selectedOption === 1}
         onChange={() => handleOptionChange(1)}
       />
-      <label>Option 1</label>
+      <label>Гауса детермінант</label>
 
       <input
         type="radio"
@@ -53,7 +53,7 @@ function App() {
         checked={selectedOption === 3}
         onChange={() => handleOptionChange(3)}
       />
-      <label>метод гауса</label>
+      <label>Знаходження обернену матрицю Гауса</label>
 
       <input
         type="radio"
